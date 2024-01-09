@@ -11,7 +11,7 @@ pipeline {
         stage('Checkout'){
            steps {
                 git credentialsId: 'jenkins_cicd', 
-                url: 'https://github.com/makresh-dev/cicd_django_todo_e2e',
+                url: 'https://github.com/makresh-dev/reddit-clone-jenkins-argocd-microk8s',
                 branch: 'main'
            }
         }
@@ -21,7 +21,7 @@ pipeline {
                 script{
                     sh '''
                     echo 'Buid Docker Image'
-                    docker build -t mknnyk/django_todo_cicd:${BUILD_NUMBER} .
+                    docker build -t mknnyk/reddit_clone:${BUILD_NUMBER} .
                     '''
                 }
             }
@@ -34,7 +34,7 @@ pipeline {
                     sh '''
                     echo 'Push to Repo'
                     docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-                    docker push mknnyk/django_todo_cicd:${BUILD_NUMBER}
+                    docker push mknnyk/reddit_clone:${BUILD_NUMBER}
                     '''
             }
                 }
@@ -44,7 +44,7 @@ pipeline {
         stage('Checkout K8S manifest SCM'){
             steps {
                 git credentialsId: 'jenkins_cicd', 
-                url: 'https://github.com/makresh-dev/cicd_django_todo_e2e.git',
+                url: 'https://github.com/makresh-dev/reddit-clone-jenkins-argocd-microk8s.git',
                 branch: 'main'
             }
         }
@@ -54,11 +54,11 @@ pipeline {
                 script{
                     withCredentials([usernamePassword(credentialsId: 'jenkins_cicd', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                         sh '''
-                        sed -i "s|mknnyk/django_todo_cicd:[0-9]*|mknnyk/django_todo_cicd:${BUILD_NUMBER}|g" cicd_manifest/deploy.yaml
-                        cat cicd_manifest/deploy.yaml
-                        git add cicd_manifest/deploy.yaml
-                        git commit -m "Updated the deploy yaml | Jenkins Pipeline"
-                        git push https://$GIT_USERNAME:$GIT_PASSWORD@github.com/makresh-dev/cicd_django_todo_e2e.git HEAD:main
+                        sed -i "s|mknnyk/reddit_clone:[0-9]*|mknnyk/reddit_clone:${BUILD_NUMBER}|g" _reddit_clone_manifests/deployment.yml
+                        cat _reddit_clone_manifests/deployment.yml
+                        git add _reddit_clone_manifests/deployment.yml
+                        git commit -m "Updated the deployment yaml | Jenkins Pipeline"
+                        git push https://$GIT_USERNAME:$GIT_PASSWORD@github.com/makresh-dev/reddit-clone-jenkins-argocd-microk8s.git HEAD:main
                         '''                        
                     }
                 }
